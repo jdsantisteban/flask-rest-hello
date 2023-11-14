@@ -128,39 +128,43 @@ def add_favpeople_to_user(people_id=None):
     return jsonify('OK'), 200
 
 # [DELETE] /favorite/planet/<int:planet_id> Delete favorite planet with the id = planet_id.
-@app.route('/favorite/planet/<int:planet_id>', methods=['DELETE'])
-def del_fav_planet(planet_id=None):
-    planet = Planet.query.get(planet_id)
-    print(planet)
-    if planet is None:
+@app.route('/favorite/planet/<int:planet_id>/<int:user_id>', methods=['DELETE'])
+def del_fav_planet(planet_id=None, user_id=None):
+    favorite = Favorite.query.filter_by(user_id=user_id, planet_id=planet_id).first()
+
+    if favorite is None:
         raise APIException('Planet not found', status_code=404)
-    if planet is not None:
-        db.session.delete(planet)
+    else:
+        db.session.delete(favorite)
         try:
-            db.session.commit()
+            db.session.commit() 
             return jsonify('OK'), 200
         except Exception as error:
             print(error)
             db.session.rollback()
             return jsonify(f'error: {error}'), 400
+    return jsonify([]), 200
+
 
 # [DELETE] /favorite/people/<int:people_id> Delete favorite people with the id = people_id.
-@app.route('/favorite/people/<int:people_id>', methods=['DELETE'])
-def del_fav_people(people_id):
-    people = Character.query.get(people_id)
-    print(people)
-    if people is None:
-        raise APIException('Person not found', status_code=404)
-    if people is not None:
-        db.session.delete(people)
+@app.route('/favorite/people/<int:people_id>/<int:user_id>', methods=['DELETE'])
+def del_fav_people(people_id=None, user_id=None):
+    favorite = Favorite.query.filter_by(user_id=user_id, character_id=people_id).first()
+
+    if favorite is None:
+        raise APIException('Character not found', status_code=404)
+    else:
+        db.session.delete(favorite)
         try:
-            db.session.commit()
+            db.session.commit() 
             return jsonify('OK'), 200
         except Exception as error:
             print(error)
             db.session.rollback()
-            return jsonify(f'error:{error}'), 400
-    
+            return jsonify(f'error: {error}'), 400
+    return jsonify([]), 200
+
+   
 # populate character
 @app.route('/people/population', methods=['GET'])
 def get_characters_population():
